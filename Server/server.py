@@ -2,7 +2,7 @@ import socket, threading
 import Objets.ship, Objets.board
 
 
-host = '127.0.0.1'
+host = '172.31.22.104'
 port = 7976
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket initialization
