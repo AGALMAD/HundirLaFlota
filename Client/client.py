@@ -2,9 +2,8 @@ import socket, threading
 
 import board, ship
 
-nickname = input( "Choose your nickname: " )
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket initialization
-client.connect(( '172.31.22.130' , 7976 )) #connecting client to server
+client.connect(( '172.31.22.104' , 7976 )) #connecting client to server
 
 ships = []
 
@@ -54,6 +53,7 @@ def receive () :
         try :
             message = client.recv( 1024 ).decode( 'ascii' )
             if message == 'NICKNAME' :
+                nickname = input("Enter nickname: " )
                 client.send(nickname.encode( 'ascii' ))
             else :
                 print(message)
@@ -62,13 +62,9 @@ def receive () :
             client.close()
             break
 
-def shot () :
-        message = '{}: {}' .format(nickname, input( 'Disparo' ))
-        client.send(message.encode( 'ascii' ))
 
 
 
-initBoards()
 
 #Hilo de escucha
 receive_thread = threading.Thread(target=receive) #receiving multiple messages
