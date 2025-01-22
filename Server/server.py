@@ -1,5 +1,6 @@
 import socket, threading
 
+from Objets.game import Game
 from Objets.user import User
 
 host = ''
@@ -12,7 +13,6 @@ server.bind((host, port)) #binding host and port to socket
 server.listen()
 
 players = []
-shot_player1 = True
 
 def init_game (client) :
 
@@ -24,10 +24,23 @@ def init_game (client) :
 
 
 def game_play(game) :
+
+    shot_player1 = True
+
     while not game.end:
         try:
-            mesagge = client.recv(1024)
-            print(mesagge.decode('utf-8'))
+            if shot_player1 :
+                game.player1.client.send('SHOT'.encode('ascii'))
+                shot = game.player1.recv(1024)
+                print(shot.decode('utf-8'))
+                game.player1.client.send('Esperando al jugador 2'.encode('ascii'))
+                shot_player1 = False
+            else:
+                game.player2.client.send('SHOT'.encode('ascii'))
+                shot = game.player2.recv(1024)
+                print(shot.decode('utf-8'))
+                game.player2.client.send('Esperando al jugador 1'.encode('ascii'))
+                shot_player1 = True
         except:
 
             break
@@ -56,7 +69,13 @@ def receive():
                 user = User(nickname, client)
                 players.append(user)
 
-                client.send('Empieza la partida'.encode('ascii'))
+                for player in players :
+                    player.client.send('Empieza la partida'.encode('ascii'))
+
+                game = Game(players[0],players[1])
+
+                thread = threading.Thread(target=game_play, args=(game,))
+                thread.start()
 
 
 

@@ -55,6 +55,9 @@ def receive () :
             if message == 'NICKNAME' :
                 nickname = input("Enter nickname: " )
                 client.send(nickname.encode( 'ascii' ))
+            elif message == 'SHOT' :
+                shot = input("Dispara: ")
+                client.send(shot.encode('ascii'))
             else :
                 print(message)
         except : #case on wrong ip/port details
