@@ -66,7 +66,7 @@ def receive () :
                     shot = input("Dispara: ")
                     client.send(shot.encode('ascii'))
                 case 'MESSAGE':
-                    print(message_receive["MESSAGE"])
+                    print(message_dic.get("MESSAGE",""))
                 case _ :
                     print(message_receive)
 

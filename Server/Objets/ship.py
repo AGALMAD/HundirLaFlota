@@ -1,11 +1,13 @@
 # Clase barco, se debe pasar la longitud y un array de sus posiciones (x,y)
 class Ship:
-    def __init__(self, positions):
+    def __init__(self, positions=None):
+        if positions is None:
+            positions = []
         self.positions = positions
 
-    # Método para disparar al barco
-    # TRUE si ha sido tocado
-    # FALSE si no ha sido tocado
+    """ Método para disparar al barco
+     TRUE si ha sido tocado
+     FALSE si no ha sido tocado"""
     def shot(self, shot_position):
         if self.positions.contains(shot_position):
             i = self.positions.index(shot_position)

@@ -2,6 +2,7 @@ import json
 import socket, threading
 
 from Objets.game import Game
+from Objets.ship import Ship
 from Objets.user import User
 
 host = ''
@@ -24,7 +25,6 @@ def init_game(client):
 
 
 def send_message(client, message_dic):
-    """ Convierte el mensaje en JSON y lo envía al cliente. """
     message_json = json.dumps(message_dic)  # Convierte el diccionario a JSON
     client.send(message_json.encode('utf-8'))
 
@@ -46,11 +46,12 @@ def game_play():
             try:
                 if shot_player1:
                     # Pide el disparo al jugador 1
-                    game.player1.client.send('SHOT'.encode('ascii'))
-                    message_to_send["TYPE"] = "SHOT"
+                    message_to_send = {"TYPE": "SHOT"}
+                    send_message(game.player1.client, message_to_send)
+
                     # El jugador 2 espera a recibir el disparo
-                    message_to_send.message = "Esperando al disparo del jugador 2"
-                    game.player2.client.send(message_to_send.encode('ascii'))
+                    message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Esperando a jugador 1"}
+                    send_message(game.player2.client, message_to_send)
 
                     shot = game.player1.client.recv(1024)
                     print(shot.decode('utf-8'))
@@ -88,7 +89,8 @@ def start():
             thread = threading.Thread(target=game_play, args=())
             thread.start()
 
-            client.send('Esperando a otro jugador'.encode('ascii'))
+            message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Esperando a otro jugador"}
+            send_message(game.player1.client, message_to_send)
 
         else:
             #Conexión con el cliente
@@ -111,6 +113,38 @@ def start():
             # Hilo del jugador 2
             thread = threading.Thread(target=game_play, args=())
             thread.start()
+
+
+def init_board(client):
+
+    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "INICIALIZA TU TABLERO"})
+
+    ships = []
+    ship_sizes = [5, 3, 3, 2]  # Tamaños de los barcos
+
+    for i, size in enumerate(ship_sizes):
+        ship_positions = []  # Lista para almacenar las posiciones del barco
+
+        send_message(client, {"TYPE": "MESSAGE", "MESSAGE": f"Coloca tu barco de {size} posiciones, envía una coordenada a la vez"})
+
+        for pos in range(size):
+            send_message(client, {"TYPE": "MESSAGE", "MESSAGE": f"Ingrese la posición {pos + 1} de {size} (ejemplo: 'A5')"})
+
+            position_json = receive_message(client)  # Recibe la coordenada del cliente
+
+            if position_json and "POSITION" in position_json:
+                ship_positions.append(position_json["POSITION"])  # Guarda la coordenada en la lista
+            else:
+                send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Error en la posición, inténtalo de nuevo"})
+                return None
+
+        # Una vez que el barco tiene todas sus posiciones, lo guardamos
+        ship = Ship(ship_positions)
+        ships.append(ship)
+
+    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Tablero configurado correctamente"})
+
+    return ships  # Devuelve la configuración de los barcos
 
 
 start()
