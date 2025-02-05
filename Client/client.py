@@ -1,9 +1,10 @@
+import json
 import socket, threading
 
 import board, ship
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket initialization
-client.connect(( '172.31.22.104' , 7976 )) #connecting client to server
+client.connect(( '192.168.1.83' , 7976 )) #connecting client to server
 
 ships = []
 
@@ -51,17 +52,29 @@ def initBoards () :
 def receive () :
     while True : #making valid connection
         try :
-            message = client.recv( 1024 ).decode( 'ascii' )
-            if message == 'NICKNAME' :
-                nickname = input("Enter nickname: " )
-                client.send(nickname.encode( 'ascii' ))
-            elif message == 'SHOT' :
-                shot = input("Dispara: ")
-                client.send(shot.encode('ascii'))
-            else :
-                print(message)
-        except : #case on wrong ip/port details
-            print( "An error occured!" )
+
+            message_receive = client.recv( 1024 ).decode( 'ascii' )
+
+            message_dic = json.loads(message_receive)
+
+            match message_dic.get("TYPE",""):
+                case 'NICKNAME':
+                    nickname = input("Enter nickname: ")
+                    client.send(nickname.encode('ascii'))
+
+                case'SHOT' :
+                    shot = input("Dispara: ")
+                    client.send(shot.encode('ascii'))
+                case 'MESSAGE':
+                    print(message_receive["MESSAGE"])
+                case _ :
+                    print(message_receive)
+
+        except json.JSONDecodeError:
+            print("Error al decodificar JSON:", message_receive)
+
+        except Exception as e:
+            print(f"Error: {e}")
             client.close()
             break
 
