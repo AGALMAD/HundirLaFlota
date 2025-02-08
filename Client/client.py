@@ -18,6 +18,22 @@ def receive () :
                 case 'NICKNAME':
                     nickname = input("Enter nickname: ")
                     client.send(nickname.encode('ascii'))
+                case 'ENTER_SHIP_POSITION':
+                    position = input(message_dic.get("MESSAGE", ""))
+
+                    try:
+
+                        #Obtiene los dos primeros caracteres y los pasa a enteros para pasar las posiciones
+                        x = ord(position[0].upper()) #Pasa letra a número
+                        y = int(position[1])
+
+                        print(x, y)
+
+                        # Enviar la posición al servidor en formato JSON
+                        position_data = json.dumps({"TYPE": "ENTER_SHIP_POSITION", "x": x, "y": y})
+                        client.send(position_data.encode('utf-8'))
+                    except (ValueError, IndexError):
+                        print("Formato inválido. Usa una letra y un número (ejemplo: B1).")
 
                 case'SHOT' :
                     shot = input("Dispara: ")

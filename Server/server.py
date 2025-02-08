@@ -1,6 +1,7 @@
 import json
 import socket, threading
 
+from Objets.board import Board
 from Objets.game import Game
 from Objets.position import Position
 from Objets.ship import Ship
@@ -36,39 +37,37 @@ def receive_message(client):
     except:
         return None
 
-def game_play():
 
-    global game
+
+def game_play():
     shot_player1 = True
 
     while not game.end:
-        #Si estan los dos jugadores, empieza la partida
-        if game.player1 and game.player2:
-            try:
-                if shot_player1:
-                    # Pide el disparo al jugador 1
-                    message_to_send = {"TYPE": "SHOT"}
-                    send_message(game.player1.client, message_to_send)
+        try:
+            current_player = game.player1 if shot_player1 else game.player2
+            opponent = game.player2 if shot_player1 else game.player1
 
-                    # El jugador 2 espera a recibir el disparo
-                    message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Esperando a jugador 1"}
-                    send_message(game.player2.client, message_to_send)
+            send_message(current_player.client, {"TYPE": "SHOT"})
+            send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": "Esperando al oponente."})
 
-                    shot = game.player1.client.recv(1024)
-                    print(shot.decode('utf-8'))
-                    shot_player1 = False
-                else:
-                    # Pide el disparo al jugador 2
-                    game.player2.client.send('SHOT'.encode('ascii'))
-                    # El jugador 1 espera a recibir el disparo
-                    game.player1.client.send('Esperando al disparo del jugador 1'.encode('ascii'))
+            shot = receive_message(current_player.client)
+            if shot:
+                result = opponent.board.register_shot(Position(shot["x"], shot["y"]))
+                send_message(current_player.client, {"TYPE": "RESULT", "MESSAGE": result})
 
-                    shot = game.player2.client.recv(1024)
-                    print(shot.decode('utf-8'))
-                    shot_player1 = True
-            except Exception as e:
-                print(e)
-                break
+                # Revisar fin del juego
+                if opponent.board.lose():
+                    send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": "¡Ganaste!"})
+                    send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": "¡Perdiste!"})
+                    game.end = True
+                    break
+
+            shot_player1 = not shot_player1
+
+        except Exception as e:
+            print(e)
+            break
+
 
 
 def start():
@@ -87,7 +86,7 @@ def start():
             game.player1 = User(nickname, client)
 
             # Hilo del jugador 1
-            thread = threading.Thread(target=game_play, args=())
+            thread = threading.Thread(target=init_board, args=(game.player1))
             thread.start()
 
             message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Esperando a otro jugador"}
@@ -112,55 +111,60 @@ def start():
             send_message(game.player2.client, message_to_send)
 
             # Hilo del jugador 2
-            thread = threading.Thread(target=game_play, args=())
+            thread = threading.Thread(target=init_board, args=(game.player2))
             thread.start()
 
 
-def init_board(client):
-    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "INICIALIZA TU TABLERO"})
+def init_board(user):
+    send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "INICIALIZA TU TABLERO"})
 
     ships = []
-    ship_sizes = [5, 4, 3, 3, 2]  # Tamaños de los barcos
+    ship_sizes = [5, 4, 3, 3, 2]
+    occupied_positions = set()  # Para evitar solapamientos
 
     for size in ship_sizes:
-
         ship_positions = []
 
-        send_message(client, {"TYPE": "MESSAGE", "MESSAGE": f"Coloca tu barco de {size} posiciones. Envía una coordenada a la vez."})
+        send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": f"Coloca tu barco de {size} posiciones."})
 
         while len(ship_positions) < size:
+            send_message(user.client, {"TYPE": "ENTER_SHIP_POSITION", "MESSAGE": f"Posición {len(ship_positions) + 1}: "})
 
-            send_message(client, {"TYPE": "SHIP_POSITION", "MESSAGE": f"Posicion {len(ship_positions) +1}: "})
+            ship_json = receive_message(user.client)
 
-            #Coordenada del cliente
-            ship_json = receive_message(client)
+            if ship_json and "x" in ship_json and "y" in ship_json:
+                position = Position(ship_json["x"], ship_json["y"])
 
-            if ship_json and "SHIP_POSITION" in ship_json:
-                client_position = ship_json["SHIP_POSITION"]
-
-                position = Position(client_position.x, client_position.y)
-
-                # Valida que la posición no esté repetida
-                if position in ship_positions:
-                    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Posición ingresada anteriormente"})
+                if position in occupied_positions:
+                    send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Posición ya ocupada."})
                     continue
-
-                elif position.x > 10 or position.y > 10:
-                    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Posición fuerra de rango"})
+                if not (0 <= position.x < 10 and 0 <= position.y < 10):
+                    send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Posición fuera de rango."})
                     continue
 
                 ship_positions.append(position)
 
             else:
-                send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Error en la posición, inténtalo de nuevo"})
+                send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Error en la posición, inténtalo de nuevo."})
 
-        #Se guarda el barco con sus posiciones
+        # Validar barco completo
+        if not correct_ship(ship_positions):
+            send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Barco inválido, colócalo recto."})
+            return init_board(user)
+
+        # Agregar barco
         ship = Ship(ship_positions)
         ships.append(ship)
+        occupied_positions.update(ship_positions)
 
-    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Tablero configurado correctamente"})
+    send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Tablero configurado correctamente."})
+    user.board = Board(ships)
 
-    return ships  # Devuelve la configuración de los barcos
+    # Iniciar el juego si los tableros están listos
+    if game.player1.board and game.player2.board:
+        game_play()
+
+
 
 #Comprueba que el barco esté recto
 def correct_ship(ship):
