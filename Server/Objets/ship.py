@@ -16,9 +16,9 @@ class Ship:
 
         return False
 
-    # Método para saber si el barco ha sido hundido
-    # TRUE si todas las posiciones han sido tocadas
-    # FALSE si hay alguna posición no tocada
+    """Método para saber si el barco ha sido hundido
+     TRUE si todas las posiciones han sido tocadas
+     FALSE si hay alguna posición no tocada"""
     def isSunken(self):
         for position in self.positions:
             if not position.touched:

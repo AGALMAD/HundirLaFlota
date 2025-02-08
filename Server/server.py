@@ -2,6 +2,7 @@ import json
 import socket, threading
 
 from Objets.game import Game
+from Objets.position import Position
 from Objets.ship import Ship
 from Objets.user import User
 
@@ -116,35 +117,59 @@ def start():
 
 
 def init_board(client):
-
     send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "INICIALIZA TU TABLERO"})
 
     ships = []
-    ship_sizes = [5, 3, 3, 2]  # Tamaños de los barcos
+    ship_sizes = [5, 4, 3, 3, 2]  # Tamaños de los barcos
 
-    for i, size in enumerate(ship_sizes):
-        ship_positions = []  # Lista para almacenar las posiciones del barco
+    for size in ship_sizes:
 
-        send_message(client, {"TYPE": "MESSAGE", "MESSAGE": f"Coloca tu barco de {size} posiciones, envía una coordenada a la vez"})
+        ship_positions = []
 
-        for pos in range(size):
-            send_message(client, {"TYPE": "MESSAGE", "MESSAGE": f"Ingrese la posición {pos + 1} de {size} (ejemplo: 'A5')"})
+        send_message(client, {"TYPE": "MESSAGE", "MESSAGE": f"Coloca tu barco de {size} posiciones. Envía una coordenada a la vez."})
 
-            position_json = receive_message(client)  # Recibe la coordenada del cliente
+        while len(ship_positions) < size:
 
-            if position_json and "POSITION" in position_json:
-                ship_positions.append(position_json["POSITION"])  # Guarda la coordenada en la lista
+            send_message(client, {"TYPE": "SHIP_POSITION", "MESSAGE": f"Posicion {len(ship_positions) +1}: "})
+
+            #Coordenada del cliente
+            ship_json = receive_message(client)
+
+            if ship_json and "SHIP_POSITION" in ship_json:
+                client_position = ship_json["SHIP_POSITION"]
+
+                position = Position(client_position.x, client_position.y)
+
+                # Valida que la posición no esté repetida
+                if position in ship_positions:
+                    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Posición ingresada anteriormente"})
+                    continue
+
+                elif position.x > 10 or position.y > 10:
+                    send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Posición fuerra de rango"})
+                    continue
+
+                ship_positions.append(position)
+
             else:
                 send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Error en la posición, inténtalo de nuevo"})
-                return None
 
-        # Una vez que el barco tiene todas sus posiciones, lo guardamos
+        #Se guarda el barco con sus posiciones
         ship = Ship(ship_positions)
         ships.append(ship)
 
     send_message(client, {"TYPE": "MESSAGE", "MESSAGE": "Tablero configurado correctamente"})
 
     return ships  # Devuelve la configuración de los barcos
+
+#Comprueba que el barco esté recto
+def correct_ship(ship):
+
+
+
+
+
+    return False
 
 
 start()
