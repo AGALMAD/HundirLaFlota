@@ -24,14 +24,18 @@ def receive():
                         nickname = input("Enter nickname: ")
                         client.send(nickname.encode('ascii'))
                     case 'ENTER_SHIP_POSITION':
-                        position = input(message_dic.get("MESSAGE", ""))
-                        try:
-                            x = ord(position[0].upper())  # Convertir letra a número
-                            y = int(position[1])
-                            position_data = json.dumps({"TYPE": "ENTER_SHIP_POSITION", "x": x, "y": y})
-                            client.send(position_data.encode('utf-8'))
-                        except (ValueError, IndexError):
-                            print("Formato inválido. Usa una letra y un número (ejemplo: B1).")
+                        #Pide posición hasta que introduce un formato correcto
+                        while True:
+                            position = input(message_dic.get("MESSAGE", ""))
+                            try:
+                                #Convierte el formato de hundir la flota (ejemplo: B1) en formato númerico para que el servidor maneje mejor los mensajes
+                                x = ord(position[0].upper()) - ord('A')
+                                y = int(position[1]) -1
+                                position_data = json.dumps({"TYPE": "ENTER_SHIP_POSITION", "x": x, "y": y})
+                                client.send(position_data.encode('utf-8'))
+                                break
+                            except (ValueError, IndexError):
+                                print("Formato inválido. Usa una letra y un número (ejemplo: B1).")
                     case 'SHOT':
                         shot = input("Dispara: ")
                         client.send(shot.encode('ascii'))
