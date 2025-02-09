@@ -19,24 +19,68 @@ server.listen()
 game = Game()
 
 
-def init_game(client):
-    while True:
-        mesagge = client.recv(1024)
 
-        ships = mesagge.decode('utf-8')
-
-
+#Funcion para poder enviar mensajes en formato json
 def send_message(client, message_dic):
     message_json = json.dumps(message_dic)  + "\n"  #Agrega un salto de linea para poder mandar mensajes consecutivos al cliente
     client.send(message_json.encode('utf-8'))
 
-
+#Funcion para poder recibir mensajes en formato json y pasarlos a diccionario
 def receive_message(client):
     try:
         message_json = client.recv(1024).decode('utf-8')
         return json.loads(message_json)  # Convierte a diccionario
     except:
         return None
+
+
+#Función que espera la conexicón de 2 clientes
+def start():
+    while True:
+        if not game.player1:
+            # Conexión con el cliente
+            client, address = server.accept()
+            print("Connected with {}".format(str(address)))
+
+            message_to_send = {"TYPE": "NICKNAME"}
+            send_message(client, message_to_send)
+
+            nickname = client.recv(1024).decode('ascii')
+
+            # Añade el usuario a la partida
+            game.player1 = User(nickname, client, Board())
+
+            message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Esperando a otro jugador"}
+            send_message(game.player1.client, message_to_send)
+
+        else:
+            # Conexión con el cliente
+            client, address = server.accept()
+            print("Connected with {}".format(str(address)))
+
+            message_to_send = {"TYPE": "NICKNAME"}
+            send_message(client, message_to_send)
+
+            nickname = client.recv(1024).decode('ascii')
+
+            # Añade el usuario a la partida
+            game.player2 = User(nickname, client, Board())
+
+            # Mensaje de comienzo de partida
+            message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Empieza la partida"}
+            send_message(game.player1.client, message_to_send)
+            send_message(game.player2.client, message_to_send)
+
+
+            #Cuando se conectan los dos jugadores pide los barcos
+
+            # Hilo del jugador 1
+            thread = threading.Thread(target=init_board, args=(game.player1,))
+            thread.start()
+
+            # Hilo del jugador 2
+            thread = threading.Thread(target=init_board, args=(game.player2,))
+            thread.start()
 
 
 def game_play():
@@ -68,53 +112,6 @@ def game_play():
             print(e)
             break
 
-
-def start():
-    while True:
-        if not game.player1:
-            # Conexión con el cliente
-            client, address = server.accept()
-            print("Connected with {}".format(str(address)))
-
-            message_to_send = {"TYPE": "NICKNAME"}
-            send_message(client, message_to_send)
-
-            nickname = client.recv(1024).decode('ascii')
-
-            # Añade el usuario a la partida
-            game.player1 = User(nickname, client)
-
-            message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Esperando a otro jugador"}
-            send_message(game.player1.client, message_to_send)
-
-        else:
-            # Conexión con el cliente
-            client, address = server.accept()
-            print("Connected with {}".format(str(address)))
-
-            message_to_send = {"TYPE": "NICKNAME"}
-            send_message(client, message_to_send)
-
-            nickname = client.recv(1024).decode('ascii')
-
-            # Añade el usuario a la partida
-            game.player2 = User(nickname, client)
-
-            # Mensaje de comienzo de partida
-            message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Empieza la partida"}
-            send_message(game.player1.client, message_to_send)
-            send_message(game.player2.client, message_to_send)
-
-
-            #Cuando se conectan los dos jugadores pide los barcos
-
-            # Hilo del jugador 1
-            thread = threading.Thread(target=init_board, args=(game.player1,))
-            thread.start()
-
-            # Hilo del jugador 2
-            thread = threading.Thread(target=init_board, args=(game.player2,))
-            thread.start()
 
 
 def init_board(user):
@@ -160,6 +157,8 @@ def init_board(user):
 
             # Agrega el barco a la lista y termina el bucle para pedir el siguiente
             ships.append(Ship(ship_positions))
+            user.board.ships = ships
+            send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": print_ships(user.board)})
             occupied_positions.append(ship_positions)
             break
 
@@ -178,6 +177,24 @@ def correct_ship(ship_positions):
         or
         len(set(y_coords)) == 1 and x_coords == list(range(min(x_coords), max(x_coords) + 1))  # Vertical
     )
+
+
+#Función para que el usuario pueda ver los barcos colocados al iniar la portida
+def print_ships(board):
+    header = "    " + "   ".join(str(i) for i in range(1, 11)) + "\n"
+
+    rows = ""
+    for i, letra in enumerate("ABCDEFGHIJ"):
+        row = f"{letra}  "
+        for j in range(10):
+            #Si hay alguna posición ocupada la imprime como B
+            if any(Position(i, j) in ship.positions for ship in board.ships):
+                row += " B  "
+            else:
+                row += " .  "
+        rows += row + "\n"
+
+    return header + rows
 
 
 start()

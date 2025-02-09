@@ -1,6 +1,6 @@
 class Board:
-    def __init__(self, ships):
-        self.ships = ships
+    def __init__(self):
+        self.ships = []
 
     #Método para disparar a los barcos
     def shot(self,shot_position):
