@@ -27,7 +27,7 @@ def init_game(client):
 
 
 def send_message(client, message_dic):
-    message_json = json.dumps(message_dic)  + "\n"  # Convierte el diccionario a JSON
+    message_json = json.dumps(message_dic)  + "\n"  #Agrega un salto de linea para poder mandar mensajes consecutivos al cliente
     client.send(message_json.encode('utf-8'))
 
 
@@ -119,7 +119,7 @@ def init_board(user):
 
     ships = []
     ship_sizes = [5, 4, 3, 3, 2]
-    occupied_positions = set()  # Para no poder poner 2 barcos en las mismas posiciones
+    occupied_positions = []  # Para no poder poner 2 barcos en las mismas posiciones
 
     for size in ship_sizes:
 
@@ -157,7 +157,7 @@ def init_board(user):
 
             # Agrega el barco a la lista y termina el bucle para pedir el siguiente
             ships.append(Ship(ship_positions))
-            occupied_positions.update(ship_positions)
+            occupied_positions.append(ship_positions)
             break
 
     # Inicia el juego si los tableros están listos
