@@ -84,10 +84,6 @@ def start():
             # Añade el usuario a la partida
             game.player1 = User(nickname, client)
 
-            # Hilo del jugador 1
-            thread = threading.Thread(target=init_board, args=(game.player1,))
-            thread.start()
-
             message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Esperando a otro jugador"}
             send_message(game.player1.client, message_to_send)
 
@@ -108,6 +104,13 @@ def start():
             message_to_send = {"TYPE": "MESSAGE", "MESSAGE": "Empieza la partida"}
             send_message(game.player1.client, message_to_send)
             send_message(game.player2.client, message_to_send)
+
+
+            #Cuando se conectan los dos jugadores pide los barcos
+
+            # Hilo del jugador 1
+            thread = threading.Thread(target=init_board, args=(game.player1,))
+            thread.start()
 
             # Hilo del jugador 2
             thread = threading.Thread(target=init_board, args=(game.player2,))
