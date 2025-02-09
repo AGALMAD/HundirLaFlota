@@ -3,7 +3,7 @@ import socket, threading
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket initialization
-client.connect(( '192.168.1.83' , 7976 )) #connecting client to server
+client.connect(( '192.168.18.79' , 7976 )) #connecting client to server
 
 
 def receive () :
