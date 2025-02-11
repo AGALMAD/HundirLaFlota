@@ -136,7 +136,7 @@ def init_board(user):
 
     ships = []
     #ship_sizes = [5,4,3, 3, 2]
-    ship_sizes = [3, 2]
+    ship_sizes = [2]
 
     occupied_positions = []  # Para no poder poner 2 barcos en las mismas posiciones
 
@@ -159,7 +159,7 @@ def init_board(user):
                     if position in occupied_positions:
                         send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Posición ya ocupada."})
                         continue
-                    if not (0 <= position.x < 10 and 0 <= position.y < 10):
+                    if not (0 <= position.x < 9 and 0 <= position.y < 9):
                         send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Posición fuera de rango."})
                         continue
 
@@ -202,7 +202,7 @@ def correct_ship(ship_positions):
 
 #Función para que el usuario pueda ver los barcos colocados al iniciar la partida
 def print_ships(board):
-    header = "    " + "   ".join(str(i) for i in range(1, 11)) + "\n"
+    header = "    " + "   ".join(str(i) for i in range(0, 10)) + "\n"
 
     rows = ""
     for i, letra in enumerate("ABCDEFGHIJ"):
@@ -220,7 +220,7 @@ def print_ships(board):
 
 #Función para que el usuario pueda ver las posiciones en las que ha tirado
 def print_opponent_board(board):
-    header = "    " + "   ".join(str(i) for i in range(1, 11)) + "\n"
+    header = "    " + "   ".join(str(i) for i in range(0, 10)) + "\n"
 
     rows = ""
     for i, letra in enumerate("ABCDEFGHIJ"):
