@@ -1,6 +1,7 @@
 class Board:
     def __init__(self):
         self.ships = []
+        self.not_touched_ships = []
 
     #Método para disparar a los barcos
     def shot(self,shot_position):

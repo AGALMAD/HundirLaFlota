@@ -199,4 +199,25 @@ def print_ships(board):
     return header + rows
 
 
+#Función para que el usuario pueda ver las posiciones en las que ha tirado
+def print_opponent_board(board):
+    header = "    " + "   ".join(str(i) for i in range(1, 11)) + "\n"
+
+    rows = ""
+    for i, letra in enumerate("ABCDEFGHIJ"):
+        row = f"{letra}  "
+        for j in range(10):
+            #Si hay alguna posición tocada la muestra
+            if any(Position.touched in ship.positions for ship in board.ships):
+                row += " B  "
+            if any(Position(i, j) in board.not_touched_ships for ship in board.ships):
+                row += " X  "
+            else:
+                row += " .  "
+        rows += row + "\n"
+
+    return header + rows
+
+
+
 start()
