@@ -116,8 +116,8 @@ def game_play():
 
                 # Revisar fin del juego
                 if opponent.board.lose():
-                    send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": "¡Ganaste!"})
-                    send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": "¡Perdiste!"})
+                    send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": show_trophy()})
+                    send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": show_game_over()})
                     game.end = True
                     break
 
@@ -239,6 +239,31 @@ def print_opponent_board(board):
         rows += row + "\n"
 
     return header + rows
+
+
+def show_trophy():
+    return """
+           ___________
+          '._==_==_=_.'
+          .-\\:      /-.
+         | (|:.     |) |
+          '-|:.     |-'
+            \\::.    /
+             '::. .'
+               ) (
+             _.' '._
+            `"""""""`
+    """
+
+def show_game_over():
+    return """
+      _____                         ____                 
+     / ____|                       / __ \\                
+    | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
+    | | |_ |/ _` | '_ ` _ \\ / _ \\ | |  | \\ \\ / / _ \\ '__|
+    | |__| | (_| | | | | | |  __/ | |__| |\\ V /  __/ |   
+     \\_____|\\__,_|_| |_| |_|\\___|  \\____/  \\_/ \\___|_|   
+    """
 
 
 

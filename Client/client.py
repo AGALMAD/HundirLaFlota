@@ -30,7 +30,7 @@ def receive():
                         try:
                             # Convierte el formato de hundir la flota (ejemplo: B1) en formato númerico para que el servidor maneje mejor los mensajes
                             x = ord(position[0].upper()) - ord('A')
-                            y = int(position[1]) - 1
+                            y = int(position[1])
                             position_data = json.dumps({"TYPE": "ENTER_SHIP_POSITION", "x": x, "y": y})
                             client.send(position_data.encode('utf-8'))
                             break
