@@ -133,6 +133,7 @@ def game_play():
 
 def init_board(user):
     send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "INICIALIZA TU TABLERO"})
+    send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": print_ships(user.board)})
 
     ships = []
     #ship_sizes = [5,4,3, 3, 2]
