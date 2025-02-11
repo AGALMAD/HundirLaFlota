@@ -159,7 +159,7 @@ def init_board(user):
             ships.append(Ship(ship_positions))
             user.board.ships = ships
             send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": print_ships(user.board)})
-            occupied_positions.append(ship_positions)
+            occupied_positions.extend(ship_positions)
             break
 
     # Inicia el juego si los tableros están listos
@@ -179,7 +179,7 @@ def correct_ship(ship_positions):
     )
 
 
-#Función para que el usuario pueda ver los barcos colocados al iniar la portida
+#Función para que el usuario pueda ver los barcos colocados al iniciar la partida
 def print_ships(board):
     header = "    " + "   ".join(str(i) for i in range(1, 11)) + "\n"
 
