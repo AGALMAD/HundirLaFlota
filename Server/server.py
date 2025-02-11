@@ -88,16 +88,29 @@ def game_play():
 
     while not game.end:
         try:
+            #Jugador que le toca disparar y oponente
             current_player = game.player1 if shot_player1 else game.player2
             opponent = game.player2 if shot_player1 else game.player1
 
-            send_message(current_player.client, {"TYPE": "SHOT"})
+            #Muestra el tablero
+            send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": print_opponent_board(opponent.board)})
+
+            #Mensaje al jugador para que dispare
+            send_message(current_player.client, {"TYPE": "SHOT","MESSAGE": "Dispara : "})
             send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": "Esperando al disparo del oponente."})
 
             shot = receive_message(current_player.client)
             if shot:
-                result = opponent.board.register_shot(Position(shot["x"], shot["y"]))
-                send_message(current_player.client, {"TYPE": "RESULT", "MESSAGE": result})
+                result = opponent.board.shot(Position(shot["x"], shot["y"]))
+
+                #Mando un mensaje al cliente para saber si lo ha tocado o no
+                match result:
+                    case 0:
+                        send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": "Agua"})
+                    case 1:
+                        send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": "Tocado"})
+                    case 2:
+                        send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": "Hundido"})
 
                 # Revisar fin del juego
                 if opponent.board.lose():
@@ -118,7 +131,9 @@ def init_board(user):
     send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "INICIALIZA TU TABLERO"})
 
     ships = []
-    ship_sizes = [5,4,3, 3, 2]
+    #ship_sizes = [5,4,3, 3, 2]
+    ship_sizes = [3, 2]
+
     occupied_positions = []  # Para no poder poner 2 barcos en las mismas posiciones
 
     for size in ship_sizes:
@@ -207,11 +222,14 @@ def print_opponent_board(board):
     for i, letra in enumerate("ABCDEFGHIJ"):
         row = f"{letra}  "
         for j in range(10):
+            position = Position(i, j)
             #Si hay alguna posición tocada la muestra
-            if any(Position.touched in ship.positions for ship in board.ships):
+            if any(position == ship_pos and ship_pos.touched for ship in board.ships for ship_pos in ship.positions):
                 row += " B  "
-            if any(Position(i, j) in board.not_touched_ships for ship in board.ships):
+            #Posiciones no tocadas
+            elif any(position == not_touched_position for not_touched_position in board.not_touched_ships):
                 row += " X  "
+            #Posiciones no disparadas
             else:
                 row += " .  "
         rows += row + "\n"

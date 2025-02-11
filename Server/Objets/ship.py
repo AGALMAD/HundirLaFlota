@@ -9,7 +9,7 @@ class Ship:
      TRUE si ha sido tocado
      FALSE si no ha sido tocado"""
     def shot(self, shot_position):
-        if self.positions.contains(shot_position):
+        if shot_position in self.positions:
             i = self.positions.index(shot_position)
             self.positions[i].touched = True
             return True
