@@ -92,7 +92,7 @@ def game_play():
             opponent = game.player2 if shot_player1 else game.player1
 
             send_message(current_player.client, {"TYPE": "SHOT"})
-            send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": "Esperando al oponente."})
+            send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": "Esperando al disparo del oponente."})
 
             shot = receive_message(current_player.client)
             if shot:
@@ -118,7 +118,7 @@ def init_board(user):
     send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "INICIALIZA TU TABLERO"})
 
     ships = []
-    ship_sizes = [5, 4, 3, 3, 2]
+    ship_sizes = [5,4,3, 3, 2]
     occupied_positions = []  # Para no poder poner 2 barcos en las mismas posiciones
 
     for size in ship_sizes:
@@ -163,8 +163,10 @@ def init_board(user):
             break
 
     # Inicia el juego si los tableros están listos
-    if game.player1.board and game.player2.board:
+    if game.player1.board.ships and game.player2.board.ships:
         game_play()
+    else:
+        send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Esperando a que el enemigo posicione sus barcos"})
 
 
 # Verifica si un barco está en línea recta y sin huecos
