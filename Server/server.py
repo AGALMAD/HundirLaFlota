@@ -92,9 +92,6 @@ def game_play():
             current_player = game.player1 if shot_player1 else game.player2
             opponent = game.player2 if shot_player1 else game.player1
 
-            #Muestra el tablero
-            send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": print_opponent_board(opponent.board)})
-
             #Mensaje al jugador para que dispare
             send_message(current_player.client, {"TYPE": "SHOT","MESSAGE": "Dispara : "})
             send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": "Esperando al disparo del oponente."})
@@ -112,6 +109,11 @@ def game_play():
                     case 2:
                         send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": "Hundido"})
 
+
+                # Muestra el tablero
+                send_message(current_player.client,
+                             {"TYPE": "MESSAGE", "MESSAGE": print_opponent_board(opponent.board)})
+
                 # Revisar fin del juego
                 if opponent.board.lose():
                     send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": "¡Ganaste!"})
@@ -120,6 +122,8 @@ def game_play():
                     break
 
             shot_player1 = not shot_player1
+
+
 
         except Exception as e:
             print(e)
