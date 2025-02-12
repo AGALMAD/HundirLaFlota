@@ -16,6 +16,8 @@ class Board:
                 else:
                     return 2
 
+
+        self.not_touched_ships.append(shot_position)
         return 0
 
     #Método para saber si el jugador se ha quedado sin barcos

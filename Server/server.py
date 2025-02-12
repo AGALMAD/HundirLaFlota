@@ -22,7 +22,7 @@ game = Game()
 
 #Funcion para poder enviar mensajes en formato json
 def send_message(client, message_dic):
-    message_json = json.dumps(message_dic)  + "\n"  #Agrega un salto de linea para poder mandar mensajes consecutivos al cliente
+    message_json = json.dumps(message_dic)  + "\n"  #Agrega un salto de línea para poder mandar mensajes consecutivos al cliente
     client.send(message_json.encode('utf-8'))
 
 #Funcion para poder recibir mensajes en formato json y pasarlos a diccionario
@@ -118,16 +118,19 @@ def game_play():
                 if opponent.board.lose():
                     send_message(current_player.client, {"TYPE": "MESSAGE", "MESSAGE": show_trophy()})
                     send_message(opponent.client, {"TYPE": "MESSAGE", "MESSAGE": show_game_over()})
-                    game.end = True
-                    break
 
-            shot_player1 = not shot_player1
+                    #Cierra las conexiones
+                    current_player.client.close()
+                    opponent.client.close()
 
+                    #Termina la partida
+                    exit()
 
+            shot_player1 = not shot_player1 #Cambia de turno
 
         except Exception as e:
             print(e)
-            break
+
 
 
 
@@ -137,7 +140,7 @@ def init_board(user):
 
     ships = []
     #ship_sizes = [5,4,3, 3, 2]
-    ship_sizes = [2]
+    ship_sizes = [ 2]
 
     occupied_positions = []  # Para no poder poner 2 barcos en las mismas posiciones
 
@@ -160,7 +163,7 @@ def init_board(user):
                     if position in occupied_positions:
                         send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Posición ya ocupada."})
                         continue
-                    if not (0 <= position.x < 9 and 0 <= position.y < 9):
+                    if not (0 <= position.x < 10 and 0 <= position.y < 10):
                         send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Posición fuera de rango."})
                         continue
 
@@ -170,7 +173,7 @@ def init_board(user):
                     send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Error en la posición, inténtalo de nuevo."})
 
 
-            # Valida barco completo
+            # Válida el barco completo
             if not correct_ship(ship_positions):
                 send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": "Barco inválido, debe estar en línea recta y sin espacios."})
                 continue  # Reintenta colocar el barco
@@ -182,7 +185,7 @@ def init_board(user):
             occupied_positions.extend(ship_positions)
             break
 
-    # Inicia el juego si los tableros están listos
+    # Inicia el juego si todos barcos del jugador 1 y 2 están colocados
     if game.player1.board.ships and game.player2.board.ships:
         game_play()
     else:

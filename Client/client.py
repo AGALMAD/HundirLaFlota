@@ -14,7 +14,7 @@ def receive():
         try:
             buffer += client.recv(1024).decode('ascii')
 
-            while "\n" in buffer:  # Lee el json separado por un salto de lines
+            while "\n" in buffer:  # Lee el json separado por un salto de línea (para poder leer mensajes consecutivos)
                 message_json, buffer = buffer.split("\n", 1)  # Separa el JSON
                 message_dic = json.loads(message_json.strip())
 
@@ -28,7 +28,7 @@ def receive():
                     while True:
                         position = input(message_dic.get("MESSAGE", ""))
                         try:
-                            # Convierte el formato de hundir la flota (ejemplo: B1) en formato númerico para que el servidor maneje mejor los mensajes
+                            # Convierte el formato de hundir la flota (ejemplo: B1) a posiciones (x, y) para que el servidor maneje mejor los mensajes
                             x = ord(position[0].upper()) - ord('A')
                             y = int(position[1])
                             position_data = json.dumps({"TYPE": "ENTER_SHIP_POSITION", "x": x, "y": y})
