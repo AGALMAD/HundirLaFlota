@@ -139,9 +139,8 @@ def init_board(user):
     send_message(user.client, {"TYPE": "MESSAGE", "MESSAGE": print_ships(user.board)})
 
     ships = []
-    #ship_sizes = [5,4,3, 3, 2]
-    ship_sizes = [ 2]
-
+    ship_sizes = [5,4,3, 3, 2]
+    
     occupied_positions = []  # Para no poder poner 2 barcos en las mismas posiciones
 
     for size in ship_sizes:
